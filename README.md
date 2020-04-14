@@ -30,7 +30,7 @@ There are five typical scenarios the kernel may follow in getblk to allocate a b
 >      > - [X] Implements **Sleep Queue**
 >- #### [BufferManagement.py](BufferMangement.py) :
 >      > - [X] Implements **getblk()** algorithm
->      > - [X] Implements **asyncWrite()** for **Delayed Write**
+>      > - [X] Implements **asynchronousWrite()** for **Delayed Write**
 >      > - [X] Implements **Signals**
 >- ####  [SignalCatcher.py](SignalCatcher.py) :
 >      > - [X] Implements **Signal Handling**
