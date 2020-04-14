@@ -25,7 +25,7 @@ There are five typical scenarios the kernel may follow in getblk to allocate a b
 >      > - [X] Implements **Free List**
 >      > - [X] Implements **Hash Queue**
 >- #### [BufferHeader.py](BufferHeader.py) :
->      > - [X] Implements **Buffer data structure**
+>      > - [X] Implements **Buffer Header data structure**
 >- #### [SleepQueue.py](SleepQueue.py) :
 >      > - [X] Implements **Sleep Queue**
 >- #### [BufferManagement.py](BufferMangement.py) :
