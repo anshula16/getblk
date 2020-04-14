@@ -35,4 +35,4 @@ There are five typical scenarios the kernel may follow in getblk to allocate a b
 >- ####  [SignalCatcher.py](SignalCatcher.py) :
 >      > - [X] Implements **Signal Handling**
 >- ####  [BufferRelease.py](BufferRelease.py) :
->      > - [X] Implements **brelse()**
+>      > - [X] Implements **brelse()** algorithm
