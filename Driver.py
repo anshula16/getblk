@@ -10,10 +10,10 @@ import BufferRelease
 def performOperation(blockNo, bufferHead, lock):
     
     '''
-    Performs a Random Operation from the following:\n
-    \t1 : Normal read operation
-    \t2 : Write operation which marks the buffer for delayed write
-    \t3 : Mark buffer invalid to simulate error
+    Performs a Random Operation from the following:
+        1 : Normal read operation
+        2 : Write operation which marks the buffer for delayed write
+        3 : Mark buffer invalid to simulate error
     '''
 
 
