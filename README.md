@@ -28,7 +28,7 @@ There are five typical scenarios the kernel may follow in getblk to allocate a b
 >      > - [X] Implements **Buffer Header data structure**
 >- #### [SleepQueue.py](SleepQueue.py) :
 >      > - [X] Implements **Sleep Queue**
->- #### [BufferManagement.py](BufferMangement.py) :
+>- #### [BufferManagement.py](BufferManagement.py) :
 >      > - [X] Implements **getblk()** algorithm
 >      > - [X] Implements **asynchronousWrite()** for **Delayed Write**
 >      > - [X] Implements **Signals**
