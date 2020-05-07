@@ -7,7 +7,7 @@ class Buffer:
         hashQSize, freeListSize, freeListHead, hashQ
     '''
 
-    def __init__(self, freeListSize = 16, hashQSize = 4):
+    def __init__(self, freeListSize = 4, hashQSize = 4):
 
         '''
         Input Parameters:
@@ -50,18 +50,22 @@ class Buffer:
         for i in range(hashQSize):
             self.hashQ.append(None)
 
-    
-    '''
-    Functions to manipulate Free List.
-    '''
+
 
 
     def getFreeListHeader(self):
         return self.freeListHead
     
 
+
+
     def findBlockInFreeList(self, blockNum):
+
         buffer = self.freeListHead
+
+        #Free-List Empty
+        if buffer == None:
+            return None
 
         if buffer.getBlockNum() == blockNum:
             return buffer
@@ -76,8 +80,12 @@ class Buffer:
         return None
 
 
+
+
     def isEmptyFreeList(self):
         return self.freeListHead == None
+
+
 
 
     def addToFreeList(self, buffer, atBeg = False):
@@ -120,12 +128,16 @@ class Buffer:
         return buffer
 
 
-    def removeFromFreeList(self, blockNo):
-        buffer = self.findBlockInFreeList(blockNo)
 
+
+    def removeFromFreeList(self, blockNo):
+        
+        buffer = self.findBlockInFreeList(blockNo)
+        if buffer == None:
+            return -1
+        
         #checking if the buffer was on free list, if not then nothing is removed
         if buffer.getFreeListNext() == None or buffer.getFreeListPrev() == None:
-            print(blockNo,buffer.getFreeListNext(),buffer.getFreeListPrev())
             return -1
 
         #if buffer is the only one present in the whole list
@@ -150,6 +162,8 @@ class Buffer:
         return 1
 
 
+
+
     def printFreeList(self):
 
         buffer = self.freeListHead
@@ -168,11 +182,10 @@ class Buffer:
             buffer = buffer.getFreeListNext()
 
         print()
-    
 
-    '''
-    Functions to manipulate Hash Queue.
-    '''
+
+##############################################################################################################################################################
+
 
 
     def findBlockInHashQ(self, blockNum):
@@ -192,12 +205,15 @@ class Buffer:
         return None
 
 
+
+
     def isPresentInHashQ(self, blockNum):
         
         if self.findBlockInHashQ(blockNum) == None:
             return False
 
         return True
+
 
 
     def addBlockToHashQ(self, buffer):
@@ -218,8 +234,12 @@ class Buffer:
         queueHead.setHashQPrev(buffer)
 
 
+
+
     #Before removing add it to the free list
-    def removeFromHashQ(self, buffer):
+    def removeFromHashQ(self, blockNo):
+
+        buffer = self.findBlockInHashQ(blockNo)
         
         if buffer == None:
             return -1    #indicates block not found in HashQ
@@ -241,8 +261,10 @@ class Buffer:
         if buffer.getBlockNum() == self.hashQ[qNum].getBlockNum():
             self.hashQ[qNum] = self.hashQ[qNum].getHashQNext()
 
-        buffer.getHashQPrev.setHashQNext(buffer.getHashQNext())
-        buffer.getHashQNext.setHashQPrev(buffer.getHashQPrev())
+        buffer.getHashQPrev().setHashQNext(buffer.getHashQNext())
+        buffer.getHashQNext().setHashQPrev(buffer.getHashQPrev())
+        
+        
 
 
     def printHashQ(self):
@@ -265,6 +287,11 @@ class Buffer:
             print("\n")
 
 
+
+##############################################################################################################################################################
+
+
+
     #since before removeBlockFromHashQ we will call addToFreeList we will be able to find the oldBlock
     def setBlockNum(self, oldBlockNum, newBlockNum):
         buffer = self.findBlockInHashQ(oldBlockNum)
@@ -273,6 +300,8 @@ class Buffer:
             buffer = self.findBlockInFreeList(oldBlockNum)
 
         buffer.setBlockNum(newBlockNum)
+
+
 
 
     def setLockedBit(self, blockNum):
@@ -285,6 +314,8 @@ class Buffer:
         buffer.setLockedStatus(True)
 
 
+
+
     def clearLockedBit(self, blockNum):
 
         buffer = self.findBlockInHashQ(blockNum)
@@ -293,6 +324,8 @@ class Buffer:
             buffer = self.findBlockInFreeList(blockNum)
 
         buffer.setLockedStatus(False)
+
+
 
 
     def checkLockedStatus(self, blockNum):
@@ -305,6 +338,9 @@ class Buffer:
         return buffer.getLockedStatus()
 
 
+
+
+
     def setValidBit(self, blockNum):
 
         buffer = self.findBlockInHashQ(blockNum)
@@ -315,8 +351,10 @@ class Buffer:
         buffer.setValidStatus(True)
 
 
-    def clearValidBit(self, blockNum):
 
+
+    def clearValidBit(self, blockNum):
+    
         buffer = self.findBlockInHashQ(blockNum)
 
         if buffer == None:
@@ -325,14 +363,19 @@ class Buffer:
         buffer.setValidStatus(False)
 
 
-    def checkValidBit(self, blockNum):
 
+
+    def checkValidBit(self, blockNum):
+        
         buffer = self.findBlockInHashQ(blockNum)
 
         if buffer == None:
             buffer = self.findBlockInFreeList(blockNum)
 
         return buffer.getValidStatus()
+
+
+
 
 
     def setDelayedWriteBit(self, blockNum):
@@ -345,6 +388,8 @@ class Buffer:
         buffer.setDelayedWrite(True)
 
 
+
+
     def clearDelayedWriteBit(self, blockNum):
 
         buffer = self.findBlockInHashQ(blockNum)
@@ -353,6 +398,8 @@ class Buffer:
             buffer = self.findBlockInFreeList(blockNum)
 
         buffer.setDelayedWrite(False)
+
+
 
 
     def checkDelayedWriteBit(self, blockNum):

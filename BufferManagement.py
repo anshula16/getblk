@@ -31,10 +31,6 @@ def asynchronousWrite(buffer, bufferHead, sleepQueue, lock):
     '''
     Buffer marked with delayed write is asynchronously written into disk.
     '''
-
-    lock.acquire()
-    buffer = bufferHead.findBlockInFreeList(buffer.getBlockNum())
-    lock.release()
     
     buffer.setDelayedWrite(False)
     time.sleep(5)
@@ -43,9 +39,7 @@ def asynchronousWrite(buffer, bufferHead, sleepQueue, lock):
     bufferHead.addToFreeList(buffer,True)
     lock.release()
     
-    blockNo = buffer.getBlockNum()
-
-    print("Done with async writing of buffer with block number",blockNo)
+    print("Done with async writing of buffer with block number",buffer.getBlockNum())
     bufferHead.printFreeList()
 
 
@@ -56,19 +50,15 @@ def asyncHelper(blockNo, bufferHead, sleepQueue, lock):
     Helper function for carrying out asynchronousWrite().
     '''
 
-    #remove buffer from the free list
-    lock.acquire()
-    
     buffer = bufferHead.findBlockInFreeList(blockNo)
     bufferHead.removeFromFreeList(blockNo)
 
     lock.release()
 
     print("\nProcess",os.getpid(),": Begin async writing of buffer with block number",blockNo)    
+    t1 = threading.Thread(target=asynchronousWrite, args=(buffer, bufferHead, sleepQueue, lock))
     
-    t1 = threading.Thread(target=asynchronousWrite, args=(buffer, bufferHead, sleepQueue, lock))9
     t1.start()
-
 
 
 
@@ -87,11 +77,12 @@ def getBlk(blockNo, bufferHead, sleepQueue, lock):
     buffer = None
 
     while buffer==None:
-        print("Process",os.getpid(),": At starting of")
+        print("Process",os.getpid(),": At starting of get-block")
         lock.acquire()
 
         #find buffer in hashQueue
         buffer = bufferHead.findBlockInHashQ(blockNo)
+        
         if buffer != None:
             
             #find if buffer is busy
@@ -108,6 +99,7 @@ def getBlk(blockNo, bufferHead, sleepQueue, lock):
 
                 if buffer.getValidStatus() == False:
                     print("Process", os.getpid(),": Buffer content invalid... Reading buffer from the disk")
+                    #bread()
                     buffer.setValidStatus(True)
                     
                 #Mark buffer as busy
@@ -118,6 +110,7 @@ def getBlk(blockNo, bufferHead, sleepQueue, lock):
 
                 #Remove from freeList
                 bufferHead.removeFromFreeList(buffer.getBlockNum())
+                bufferHead.setLockedBit(buffer.getBlockNum())
 
                 print("Process", os.getpid(),": Got buffer with block number",blockNo," from hashQ")
                 bufferHead.printFreeList()
@@ -141,30 +134,30 @@ def getBlk(blockNo, bufferHead, sleepQueue, lock):
             else:
 
                 #if freeList is not empty get a buffer    
-                #buffer = bufferHead.findBlockInFreeList(-1)
                 buffer = bufferHead.getAnyBuffer()
 
                 #check if the buffer was marked for delayed write
                 if buffer.getDelayedWrite():
 
                     #process will go for async writing
+                    print("*************************************")
                     print("Process", os.getpid(),": Got a buffer which was marked with delayedWrite")
                     print("Process", os.getpid(),": Status of freeList before:")
                     bufferHead.printFreeList()
 
-                    lock.release()
+                    #lock.release()
                     asyncHelper(buffer.getBlockNum(), bufferHead, sleepQueue, lock)
                     
                     #Asynchronous write will remove the buffer from the freeList
                     #Start writing the buffer into the disk block asynchronously
                     #And then will add the process to the head of freeList
 
-                    lock.acquire()
+                    #lock.acquire()
 
                     print("Process", os.getpid(),": Status of freeList after:")
                     bufferHead.printFreeList()
                     
-                    lock.release()
+                    #lock.release()
                     buffer = None
                     continue
 
@@ -180,7 +173,7 @@ def getBlk(blockNo, bufferHead, sleepQueue, lock):
                     
                     #Update HashQ
                     if bufferHead.findBlockInHashQ(buffer.getBlockNum()) != None:
-                        bufferHead.removeFromHashQ(buffer)
+                        bufferHead.removeFromHashQ(buffer.getBlockNum())
 
                     buffer.setBlockNum(blockNo)
                     bufferHead.addBlockToHashQ(buffer)

@@ -1,8 +1,6 @@
 import os, signal, random
 from Buffer import Buffer
 
-
-
 def brelse(buffer, bufferHead, lock, sleepQueue):
 
     '''
@@ -11,12 +9,14 @@ def brelse(buffer, bufferHead, lock, sleepQueue):
     '''
 
     lock.acquire()
-
+    
+    blockNo = buffer.getBlockNum();
+    
     if buffer==None:
         print("\nUnexpected behaviour")
         return
-    
-    if bufferHead.checkValidBit(buffer.getBlockNum()):
+
+    if bufferHead.checkValidBit(blockNo):
         print("Adding at the end")
         bufferHead.addToFreeList(buffer, False)
     else:
@@ -24,56 +24,30 @@ def brelse(buffer, bufferHead, lock, sleepQueue):
         bufferHead.addToFreeList(buffer, True)
 
     bufferHead.clearLockedBit(buffer.getBlockNum())
-    print("Process ",os.getpid(),": Unlocked buffer ",buffer.getBlockNum(),"            Lock status:",buffer.getLockedStatus())
+    print("Process",os.getpid(),": Unlocked buffer ",buffer.getBlockNum(),"            Lock status:",buffer.getLockedStatus())
     bufferHead.printFreeList()
-    wakeUp(buffer.getBlockNum(),lock,sleepQueue)
+    
+    wakeAllProcessWaitingForBuffer(sleepQueue,buffer)
+    wakeAllProcessWaitingForAnyBuffer(sleepQueue)
     
     lock.release()
 
 
 
-def wakeUp(blockNo, lock, sleepQueue):
-
-    '''
-    Wakes up a process randomly, waiting for specific buffer or any buffer.
-	'''
-
-    toss = random.randint(1, 10)
-    
-    if toss % 2 == 0:
-        anyPid = sleepQueue.getRandomProcess(-1)
-        if anyPid != None:
-            print("Process waiting for any buffer woke up")
-            wakeUpHelper(-1, lock, sleepQueue, anyPid)
-            sleepQueue.printSQ()
-            return
-    
-    particularPid = sleepQueue.getRandomProcess(blockNo)
-
-    if particularPid != None:
-        print("Process waiting for specific buffer woke up")
-        wakeUpHelper(blockNo, lock, sleepQueue, particularPid)
-        sleepQueue.printSQ()
+def wakeAllProcessWaitingForBuffer(sleepQueue,buffer):
+    #-2 is returned when no such entry for buffer in sleepQueue
+    list=sleepQueue.getPidsWaitingForBuffer(buffer.getBlockNum())
+    if(list==-2):
         return
-    else:
-        anyPid = sleepQueue.getRandomProcess(-1)
-        if anyPid != None:
-            print("Process waiting for any buffer woke up")
-            wakeUpHelper(-1, lock, sleepQueue, anyPid)
-            return
-    print("No process to wake up")
-    sleepQueue.printSQ()
+    for pid in list:
+        os.kill(pid,signal.SIGINT)
 
 
-def wakeUpHelper(blockNo, lock, sleepQueue, pid):
+def wakeAllProcessWaitingForAnyBuffer(sleepQueue):
+    #-2 is returned when no such entry for buffer in sleepQueue
+    list=sleepQueue.getPidsWaitingForAnyBuffer()
+    if(list==-2):
+        return
+    for pid in list:
+        os.kill(pid,signal.SIGHUP)
 
-    '''
-    Helper function for implementing wakeUp().
-	'''
-
-    if blockNo == -1:
-        sleepQueue.remove(pid)
-        os.kill(pid, signal.SIGHUP)
-    else:
-        sleepQueue.remove(pid)
-        os.kill(pid, signal.SIGINT)

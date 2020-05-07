@@ -31,37 +31,9 @@ class SleepQueue:
             self.sleepQueue[blockNum] = [pid]
 
         self.revSleepQueue[pid] = blockNum
-        print("Process",pid,"added to the sleep queue")
+        print("Process",pid,": Added to the sleep queue")
 
-    
-    def remove(self, pid):
-    
-        '''
-        Removes the given pid from Sleep Queue.
-        '''
-    
-        if pid in self.revSleepQueue:
-            blockNum = self.revSleepQueue.pop(pid)
-            self.sleepQueue[blockNum].remove(pid)
 
-            # if no more processes are waiting for this block, remove blockNum from sleepQueue
-            if len(self.sleepQueue[blockNum]) == 0:
-                self.sleepQueue.pop(blockNum)
-
-    
-    def getRandomProcess(self, blockNum):
-    
-        '''
-        Returns a random pid of a process waiting for given blockNum in the Sleep Queue.\n
-        Returns None, if no such pid.
-        '''
-    
-        if blockNum in self.sleepQueue:
-            randIndex = random.randrange(len(self.sleepQueue[blockNum]))  # get a random index
-            pid = self.sleepQueue[blockNum][randIndex] # pid of process at that index
-            return pid 
-            
-    
     def printSQ(self):
     
         '''
@@ -76,3 +48,20 @@ class SleepQueue:
                 st += str(pid) + ", "
             st += "]"
             print(blockNo, ":", st)
+
+
+    def getPidsWaitingForBuffer(self,buffer): 
+        
+        '''
+        Returns pids waiting for a specific buffer
+        '''
+        
+        return self.sleepQueue.pop(buffer,-2)
+
+    def getPidsWaitingForAnyBuffer(self):
+
+        '''
+        Returns pids waiting for any buffer
+        '''
+
+        return self.sleepQueue.pop(-1,-2)
